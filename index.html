@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ubuntu-Härtung automatisiert</title>
+<meta name="description" content="Bash-Projekte zur automatisierten Installation, Einrichtung und Härtung von Ubuntu 24.04 und 26.04 nach CIS Level 1 und BSI.">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --text: #1c1d1f;
+    --muted: #5d6066;
+    --line: #e2e2de;
+    --accent: #b4441f;
+    --accent-soft: #f6e6df;
+    --code-bg: #efefeb;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141516;
+      --surface: #1c1d1f;
+      --text: #ececea;
+      --muted: #a1a3a8;
+      --line: #2e3033;
+      --accent: #e88a63;
+      --accent-soft: #3a2620;
+      --code-bg: #26282b;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141516;
+    --surface: #1c1d1f;
+    --text: #ececea;
+    --muted: #a1a3a8;
+    --line: #2e3033;
+    --accent: #e88a63;
+    --accent-soft: #3a2620;
+    --code-bg: #26282b;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  a { color: var(--accent); }
+  code {
+    font: .88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    padding: .1em .35em;
+    border-radius: 4px;
+  }
+
+  header { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font: 600 .8rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.12; margin: 14px 0 18px; letter-spacing: -.02em; }
+  .lead { font-size: 1.15rem; color: var(--muted); max-width: 680px; margin: 0; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .badge {
+    border: 1px solid var(--line); background: var(--surface);
+    border-radius: 999px; padding: 4px 12px; font-size: .85rem; color: var(--muted);
+  }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  h2 { font-size: 1.5rem; margin: 0 0 8px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+
+  /* Ablauf */
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; }
+  .step {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px; box-shadow: var(--shadow); position: relative;
+  }
+  .step .n { font: 600 .78rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); }
+  .step h3 { margin: 4px 0 4px; font-size: 1.1rem; }
+  .step p { margin: 0; color: var(--muted); font-size: .93rem; }
+  .step:not(:last-child)::after {
+    content: "→"; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 1.1rem; background: var(--bg); line-height: 1;
+  }
+  .side {
+    margin: 14px auto 0; max-width: calc((100% - 28px) / 3);
+    border-style: dashed; text-align: center;
+  }
+  .side::before {
+    content: "↑"; position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+    color: var(--muted);
+  }
+
+  /* Projekte */
+  .projects { display: grid; gap: 18px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 24px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 1fr 1.25fr; gap: 24px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 1.3rem; }
+  .card .role { margin: 0 0 12px; color: var(--accent); font-weight: 600; font-size: .9rem; }
+  .card p { margin: 0 0 12px; }
+  .card ul { margin: 0; padding-left: 18px; }
+  .card li { margin: 4px 0; }
+  .card li::marker { color: var(--accent); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    font: .78rem ui-monospace, Menlo, Consolas, monospace;
+    background: var(--accent-soft); color: var(--text); border-radius: 6px; padding: 2px 8px;
+  }
+
+  /* Prinzipien */
+  .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .principle { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .principle h3 { margin: 0 0 6px; font-size: 1rem; }
+  .principle p { margin: 0; color: var(--muted); font-size: .93rem; }
+
+  /* Beispiel */
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px; overflow-x: auto; margin: 0;
+    font: .88rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  pre .c { color: var(--muted); }
+
+  footer { padding: 36px 0 56px; color: var(--muted); font-size: .9rem; }
+
+  @media (max-width: 760px) {
+    header { padding: 48px 0 36px; }
+    section { padding: 40px 0; }
+    .flow { grid-template-columns: 1fr; }
+    .step:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -19px; transform: translateX(-50%); }
+    .side { max-width: none; margin-top: 30px; }
+    .card { grid-template-columns: 1fr; gap: 8px; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Chicco70 · Bash-Automatisierung</div>
+    <h1>Ubuntu installieren, einrichten und härten. Reproduzierbar.</h1>
+    <p class="lead">Vier Projekte, die ein Ubuntu-System vom Installer-Stick bis zum geprüften,
+      nach CIS Level 1 und den BSI-Empfehlungen abgesicherten System bringen. Auch ohne Internet.</p>
+    <div class="badges">
+      <span class="badge">Ubuntu 24.04 LTS</span>
+      <span class="badge">Ubuntu 26.04 LTS</span>
+      <span class="badge">amd64 · arm64</span>
+      <span class="badge">NVIDIA DGX Spark</span>
+      <span class="badge">CIS Level 1 · BSI</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <h2>Ablauf</h2>
+      <p class="sub">Jeder Schritt ist ein eigenes Projekt. Zusammen ergeben sie eine durchgehende Kette.</p>
+      <div class="flow">
+        <div class="step"><div class="n">01</div><h3>ISO-Partitionen</h3><p>Installation mit verschlüsseltem, CIS-konformem Partitionslayout</p></div>
+        <div class="step"><div class="n">02</div><h3>SystemSetup</h3><p>Einrichtung: Netzwerk, Quellen, Benutzer, Software</p></div>
+        <div class="step"><div class="n">03</div><h3>Hardening</h3><p>Härtung und Prüfung mit OpenSCAP und Lynis</p></div>
+      </div>
+      <div class="step side"><div class="n">Basis</div><h3>Mirror</h3><p>Interne Paketquellen für alle Schritte</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Projekte</h2>
+      <p class="sub">Die Repositories sind privat. Hier steht, was sie leisten.</p>
+      <div class="projects">
+
+        <article class="card">
+          <div>
+            <h3>ISO-Partitionen</h3>
+            <p class="role">Installation</p>
+            <p>Ubuntu-Installer als ISO oder USB-Stick mit Autoinstall. Das Partitionslayout lässt sich nach der Installation kaum noch ändern, deshalb wird es gleich richtig angelegt.</p>
+            <div class="tags"><span class="tag">autoinstall</span><span class="tag">LUKS</span><span class="tag">LVM</span><span class="tag">xorriso</span></div>
+          </div>
+          <ul>
+            <li>LUKS-Verschlüsselung mit LVM, <code>/boot</code> und <code>/boot/efi</code> getrennt</li>
+            <li>Eigene Volumes für <code>/var</code>, <code>/var/tmp</code>, <code>/var/log</code>, <code>/var/log/audit</code>, <code>/tmp</code> und <code>/home</code></li>
+            <li>Mount-Optionen <code>nodev</code>, <code>nosuid</code> und <code>noexec</code> direkt bei der Installation</li>
+            <li>Größen dynamisch nach Platte, mit Reserve in der Volume Group</li>
+            <li>Abbruch vor dem Schreiben, nie ein stilles Standardlayout</li>
+            <li>Bau aus dem Original-ISO, Secure Boot bleibt erhalten</li>
+            <li>Desktop und Server (amd64) sowie DGX OS (arm64)</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div>
+            <h3>SystemSetup</h3>
+            <p class="role">Einrichtung</p>
+            <p>Richtet ein frisch installiertes System in einem Lauf ein. Die Installationsdaten können vom USB-Stick kommen, dann läuft alles offline.</p>
+            <div class="tags"><span class="tag">bash</span><span class="tag">apt</span><span class="tag">ClamAV</span><span class="tag">offline</span></div>
+          </div>
+          <ul>
+            <li>Hostname, Netzwerk und Paketquellen</li>
+            <li>Benutzer und Pakete</li>
+            <li>VS Code, Chromium und LM Studio</li>
+            <li>ClamAV mit Konfiguration und geplanten Scans</li>
+            <li>Prüfung und Zusammenfassung am Ende</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div>
+            <h3>Mirror</h3>
+            <p class="role">Interne Paketquellen</p>
+            <p>Ein Mirror-Server im eigenen Netz. Clients beziehen Updates und Virensignaturen von dort statt aus dem Internet.</p>
+            <div class="tags"><span class="tag">apt-mirror2</span><span class="tag">cvdupdate</span><span class="tag">Apache</span><span class="tag">systemd</span></div>
+          </div>
+          <ul>
+            <li>Ubuntu 24.04 und 26.04, tägliche Synchronisation</li>
+            <li>ClamAV-Signaturen, Update alle sechs Stunden</li>
+            <li>Optional NVIDIA/Mellanox (CUDA, HPC SDK, DOCA), Kubernetes, VS Code, Chromium und LM Studio</li>
+            <li>Ein Skript stellt Clients um und kann jeden Lauf zurücknehmen</li>
+            <li>Ein Skript passt kopierte Systeme an: Name, Netzwerk, Kennungen, Benutzer</li>
+            <li>Zugriff auf bestimmte Netze beschränkbar, passt zu gehärteten Servern</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div>
+            <h3>Hardening</h3>
+            <p class="role">Härtung und Prüfung</p>
+            <p>Modulares Framework mit 31 Modulen und vier Profilen. Jede Änderung wird vorher gesichert und lässt sich zurücknehmen.</p>
+            <div class="tags"><span class="tag">CIS</span><span class="tag">OpenSCAP</span><span class="tag">Lynis</span><span class="tag">PAM</span></div>
+          </div>
+          <ul>
+            <li>Profile <code>desktop</code>, <code>server</code>, <code>secure</code> und <code>kiosk</code></li>
+            <li>SSH, PAM, sudo, sysctl, Dateirechte und Mount-Optionen</li>
+            <li>auditd, AIDE, fail2ban, AppArmor und Firewall</li>
+            <li><code>--dry-run</code> und <code>--diff</code> zeigen vorher, was sich ändert</li>
+            <li>Rollback mit Manifest und SHA256-Prüfsummen</li>
+            <li>Berichte aus OpenSCAP und Lynis, Ausnahmen begründet dokumentiert</li>
+          </ul>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Arbeitsweise</h2>
+      <p class="sub">Regeln, die für alle Skripte gelten.</p>
+      <div class="grid4">
+        <div class="principle"><h3>Idempotent</h3><p>Ein zweiter Lauf ändert nichts, was schon stimmt.</p></div>
+        <div class="principle"><h3>Erst fragen</h3><p>Zusammenfassung vor jeder Änderung, Probelauf wo möglich.</p></div>
+        <div class="principle"><h3>Rücknehmbar</h3><p>Originaldateien werden vorher gesichert und lassen sich zurückspielen.</p></div>
+        <div class="principle"><h3>Offline-fähig</h3><p>Installation und Updates über den eigenen Mirror oder vom USB-Stick.</p></div>
+        <div class="principle"><h3>Nachweisbar</h3><p>Prüfberichte und dokumentierte Ausnahmen für das Audit.</p></div>
+        <div class="principle"><h3>Für gehärtete Systeme</h3><p>Die Skripte berücksichtigen umask, Firewall und SSH-Regeln gehärteter Systeme.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Beispiel</h2>
+      <p class="sub">Ein Server von der Installation bis zur Prüfung. Namen und Adressen sind Platzhalter.</p>
+<pre><span class="c"># 1. Vom Stick installieren: Autoinstall legt das CIS-Layout an</span>
+
+<span class="c"># 2. Einrichten</span>
+sudo ./setup.sh
+
+<span class="c"># 3. Paketquellen auf den internen Mirror umstellen</span>
+sudo MIRROR=mirror.example.com ./client_conf.sh
+
+<span class="c"># 4. Erst anzeigen, dann härten</span>
+sudo ./hardening.sh --profile server --dry-run --diff
+sudo ./hardening.sh --profile server
+
+<span class="c"># 5. Prüfen</span>
+sudo ./hardening.sh --profile server --only 28,30 --scan</pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Chicco70 · Beispiele verwenden Platzhalter wie <code>mirror.example.com</code> oder <code>192.0.2.10</code>.
+    · <a href="https://github.com/Chicco70">GitHub-Profil</a>
+  </div>
+</footer>
+
+</body>
+</html>
