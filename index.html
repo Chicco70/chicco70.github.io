@@ -5,145 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ubuntu-Härtung automatisiert</title>
 <meta name="description" content="Bash-Projekte zur automatisierten Installation, Einrichtung und Härtung von Ubuntu 24.04 und 26.04 nach CIS Level 1 und BSI.">
-<style>
-  :root {
-    --bg: #f7f7f5;
-    --surface: #ffffff;
-    --text: #1c1d1f;
-    --muted: #5d6066;
-    --line: #e2e2de;
-    --accent: #b4441f;
-    --accent-soft: #f6e6df;
-    --code-bg: #efefeb;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #141516;
-      --surface: #1c1d1f;
-      --text: #ececea;
-      --muted: #a1a3a8;
-      --line: #2e3033;
-      --accent: #e88a63;
-      --accent-soft: #3a2620;
-      --code-bg: #26282b;
-      --shadow: none;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #141516;
-    --surface: #1c1d1f;
-    --text: #ececea;
-    --muted: #a1a3a8;
-    --line: #2e3033;
-    --accent: #e88a63;
-    --accent-soft: #3a2620;
-    --code-bg: #26282b;
-    --shadow: none;
-  }
-
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
-  a { color: var(--accent); }
-  code {
-    font: .88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: var(--code-bg);
-    padding: .1em .35em;
-    border-radius: 4px;
-  }
-
-  header { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
-  .eyebrow {
-    font: 600 .8rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
-  }
-  h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.12; margin: 14px 0 18px; letter-spacing: -.02em; }
-  .lead { font-size: 1.15rem; color: var(--muted); max-width: 680px; margin: 0; }
-  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
-  .badge {
-    border: 1px solid var(--line); background: var(--surface);
-    border-radius: 999px; padding: 4px 12px; font-size: .85rem; color: var(--muted);
-  }
-
-  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
-  h2 { font-size: 1.5rem; margin: 0 0 8px; letter-spacing: -.01em; }
-  .sub { color: var(--muted); margin: 0 0 28px; }
-
-  /* Ablauf */
-  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; }
-  .step {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: 18px; box-shadow: var(--shadow); position: relative;
-  }
-  .step .n { font: 600 .78rem ui-monospace, Menlo, Consolas, monospace; color: var(--accent); }
-  .step h3 { margin: 4px 0 4px; font-size: 1.1rem; }
-  .step p { margin: 0; color: var(--muted); font-size: .93rem; }
-  .step:not(:last-child)::after {
-    content: "→"; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); font-size: 1.1rem; background: var(--bg); line-height: 1;
-  }
-  .side {
-    margin: 14px auto 0; max-width: calc((100% - 28px) / 3);
-    border-style: dashed; text-align: center;
-  }
-  .side::before {
-    content: "↑"; position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
-    color: var(--muted);
-  }
-
-  /* Projekte */
-  .projects { display: grid; gap: 18px; }
-  .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-    padding: 24px; box-shadow: var(--shadow);
-    display: grid; grid-template-columns: 1fr 1.25fr; gap: 24px;
-  }
-  .card h3 { margin: 0 0 6px; font-size: 1.3rem; }
-  .card .role { margin: 0 0 12px; color: var(--accent); font-weight: 600; font-size: .9rem; }
-  .card p { margin: 0 0 12px; }
-  .card ul { margin: 0; padding-left: 18px; }
-  .card li { margin: 4px 0; }
-  .card li::marker { color: var(--accent); }
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .tag {
-    font: .78rem ui-monospace, Menlo, Consolas, monospace;
-    background: var(--accent-soft); color: var(--text); border-radius: 6px; padding: 2px 8px;
-  }
-
-  /* Prinzipien */
-  .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
-  .principle { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
-  .principle h3 { margin: 0 0 6px; font-size: 1rem; }
-  .principle p { margin: 0; color: var(--muted); font-size: .93rem; }
-
-  /* Beispiel */
-  pre {
-    background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px;
-    padding: 18px; overflow-x: auto; margin: 0;
-    font: .88rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-  pre .c { color: var(--muted); }
-
-  footer { padding: 36px 0 56px; color: var(--muted); font-size: .9rem; }
-
-  @media (max-width: 760px) {
-    header { padding: 48px 0 36px; }
-    section { padding: 40px 0; }
-    .flow { grid-template-columns: 1fr; }
-    .step:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -19px; transform: translateX(-50%); }
-    .side { max-width: none; margin-top: 30px; }
-    .card { grid-template-columns: 1fr; gap: 8px; padding: 20px; }
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
 
 <header>
   <div class="wrap">
@@ -161,17 +26,17 @@
   </div>
 </header>
 
-<main>
+<main id="inhalt">
   <section>
     <div class="wrap">
       <h2>Ablauf</h2>
       <p class="sub">Jeder Schritt ist ein eigenes Projekt. Zusammen ergeben sie eine durchgehende Kette.</p>
-      <div class="flow">
-        <div class="step"><div class="n">01</div><h3>ISO-Partitionen</h3><p>Installation mit verschlüsseltem, CIS-konformem Partitionslayout</p></div>
-        <div class="step"><div class="n">02</div><h3>SystemSetup</h3><p>Einrichtung: Netzwerk, Quellen, Benutzer, Software</p></div>
-        <div class="step"><div class="n">03</div><h3>Hardening</h3><p>Härtung und Prüfung mit OpenSCAP und Lynis</p></div>
-      </div>
-      <div class="step side"><div class="n">Basis</div><h3>Mirror</h3><p>Interne Paketquellen für alle Schritte</p></div>
+      <ol class="flow" aria-label="Ablauf in drei Schritten">
+        <li class="step"><div class="n" aria-hidden="true">01</div><h3>ISO-Partitionen</h3><p>Installation mit verschlüsseltem, CIS-konformem Partitionslayout</p></li>
+        <li class="step"><div class="n" aria-hidden="true">02</div><h3>SystemSetup</h3><p>Einrichtung: Netzwerk, Quellen, Benutzer, Software</p></li>
+        <li class="step"><div class="n" aria-hidden="true">03</div><h3>Hardening</h3><p>Härtung und Prüfung mit OpenSCAP und Lynis</p></li>
+      </ol>
+      <div class="step side"><div class="n">Basis für alle Schritte</div><h3>Mirror</h3><p>Interne Paketquellen</p></div>
     </div>
   </section>
 
@@ -292,8 +157,12 @@ sudo ./hardening.sh --profile server --only 28,30 --scan</pre>
 
 <footer>
   <div class="wrap">
-    Chicco70 · Beispiele verwenden Platzhalter wie <code>mirror.example.com</code> oder <code>192.0.2.10</code>.
-    · <a href="https://github.com/Chicco70">GitHub-Profil</a>
+    <p>Chicco70 · Beispiele verwenden Platzhalter wie <code>mirror.example.com</code> oder <code>192.0.2.10</code>.</p>
+    <nav aria-label="Rechtliches und Links">
+      <a href="impressum.html">Impressum</a> ·
+      <a href="datenschutz.html">Datenschutz</a> ·
+      <a href="https://github.com/Chicco70">GitHub-Profil</a>
+    </nav>
   </div>
 </footer>
 
