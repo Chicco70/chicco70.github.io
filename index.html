@@ -50,17 +50,19 @@
           <div>
             <h3>ISO-Partitionen</h3>
             <p class="role">Installation</p>
-            <p>Ubuntu-Installer als ISO oder USB-Stick mit Autoinstall. Das Partitionslayout lässt sich nach der Installation kaum noch ändern, deshalb wird es gleich richtig angelegt.</p>
-            <div class="tags"><span class="tag">autoinstall</span><span class="tag">LUKS</span><span class="tag">LVM</span><span class="tag">xorriso</span></div>
+            <p>Installer-Stick mit Autoinstall für zwei Gerätetypen: verschlüsselte Laptops und NVIDIA DGX Spark. Das Partitionslayout lässt sich nach der Installation kaum noch ändern, deshalb wird es gleich richtig angelegt.</p>
+            <div class="tags"><span class="tag">autoinstall</span><span class="tag">LUKS2</span><span class="tag">TPM2</span><span class="tag">LVM</span></div>
           </div>
           <ul>
-            <li>LUKS-Verschlüsselung mit LVM, <code>/boot</code> und <code>/boot/efi</code> getrennt</li>
+            <li><strong>Laptop (Ubuntu 26.04, amd64):</strong> LUKS2 mit LVM, Entsperren über TPM2 an den Secure-Boot-Zustand gebunden</li>
+            <li>Wiederherstellungsschlüssel wird auf dem Stick gesichert, sonst bricht die Installation ab</li>
+            <li><strong>NVIDIA DGX Spark (DGX OS 7.4, arm64):</strong> CIS-Layout im Installer von NVIDIA</li>
             <li>Eigene Volumes für <code>/var</code>, <code>/var/tmp</code>, <code>/var/log</code>, <code>/var/log/audit</code>, <code>/tmp</code> und <code>/home</code></li>
             <li>Mount-Optionen <code>nodev</code>, <code>nosuid</code> und <code>noexec</code> direkt bei der Installation</li>
             <li>Größen dynamisch nach Platte, mit Reserve in der Volume Group</li>
+            <li>Zielplatte nur automatisch, wenn es genau eine interne gibt, sonst per Bootparameter</li>
             <li>Abbruch vor dem Schreiben, nie ein stilles Standardlayout</li>
             <li>Bau aus dem Original-ISO, Secure Boot bleibt erhalten</li>
-            <li>Laptop mit LUKS und TPM2 (amd64) sowie NVIDIA DGX Spark (arm64)</li>
           </ul>
         </article>
 
@@ -91,7 +93,7 @@
             <li>Ubuntu 24.04 und 26.04, tägliche Synchronisation</li>
             <li>ClamAV-Signaturen, Update alle sechs Stunden</li>
             <li>Optional NVIDIA/Mellanox (CUDA, HPC SDK, DOCA), Kubernetes, VS Code, Chromium und LM Studio</li>
-            <li>Ein Skript stellt Clients um und kann jeden Lauf zurücknehmen</li>
+            <li>Ein Skript stellt Clients um und kann jeden Lauf zurücknehmen. Der interne Mirror wird beim ersten Lauf abgefragt und gespeichert.</li>
             <li>Ein Skript passt kopierte Systeme an: Name, Netzwerk, Kennungen, Benutzer</li>
             <li>Zugriff auf bestimmte Netze beschränkbar, passt zu gehärteten Servern</li>
           </ul>
@@ -136,8 +138,9 @@
   <section>
     <div class="wrap">
       <h2>Beispiel</h2>
-      <p class="sub">Ein Server von der Installation bis zur Prüfung. Namen und Adressen sind Platzhalter.</p>
-<pre><span class="c"># 1. Vom Stick installieren: Autoinstall legt das CIS-Layout an</span>
+      <p class="sub">Ein verschlüsselter Laptop von der Installation bis zur Prüfung. Namen und Adressen sind Platzhalter.</p>
+<pre><span class="c"># 1. Vom Stick installieren, Bootmenü "LAPTOP verschluesselt":
+#    CIS-Layout mit LUKS2 + TPM2, Wiederherstellungsschlüssel auf dem Stick</span>
 
 <span class="c"># 2. Einrichten</span>
 sudo ./setup.sh
@@ -146,11 +149,11 @@ sudo ./setup.sh
 sudo MIRROR=mirror.example.com ./client_conf.sh
 
 <span class="c"># 4. Erst anzeigen, dann härten</span>
-sudo ./hardening.sh --profile server --dry-run --diff
-sudo ./hardening.sh --profile server
+sudo ./hardening.sh --profile desktop --dry-run --diff
+sudo ./hardening.sh --profile desktop
 
 <span class="c"># 5. Prüfen</span>
-sudo ./hardening.sh --profile server --only 28,30 --scan</pre>
+sudo ./hardening.sh --profile desktop --only 28,30 --scan</pre>
     </div>
   </section>
 </main>
